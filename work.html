@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambola Ticket Marker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #fce7f3 0%, #dbeafe 50%, #f3e8ff 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-size: 4rem;
+            font-weight: bold;
+            background: linear-gradient(to right, #9333ea, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .controls {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .ticket-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .ticket-selector label {
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .number-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .num-btn {
+            width: 45px;
+            height: 45px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .num-btn:hover {
+            background: #e5e7eb;
+            transform: translateY(-2px);
+        }
+
+        .num-btn.active {
+            background: linear-gradient(to right, #9333ea, #ec4899);
+            color: white;
+            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+        }
+
+        .generate-btn {
+            padding: 15px 40px;
+            background: linear-gradient(to right, #9333ea, #ec4899);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3);
+        }
+
+        .generate-btn:hover {
+            box-shadow: 0 6px 20px rgba(147, 51, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .tickets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .ticket {
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            padding: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .ticket:hover {
+            transform: scale(1.02);
+        }
+
+        .ticket.orange { background: linear-gradient(135deg, #fed7aa 0%, #ffedd5 100%); }
+        .ticket.red { background: linear-gradient(135deg, #fecaca 0%, #fee2e2 100%); }
+        .ticket.blue { background: linear-gradient(135deg, #bfdbfe 0%, #dbeafe 100%); }
+        .ticket.green { background: linear-gradient(135deg, #bbf7d0 0%, #dcfce7 100%); }
+        .ticket.purple { background: linear-gradient(135deg, #e9d5ff 0%, #f3e8ff 100%); }
+
+        .ticket-inner {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .ticket-title {
+            text-align: center;
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .ticket-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .ticket-row {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 8px;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+        }
+
+        .cell.empty {
+            background: transparent;
+        }
+
+        .cell.number {
+            background: white;
+            color: #1f2937;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+
+        .cell.number:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: scale(1.05);
+        }
+
+        .cell.marked {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: white;
+            box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
+            transform: scale(0.95);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-state .emoji {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            color: #4b5563;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 3rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+            }
+
+            .tickets-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                padding: 20px;
+            }
+
+            .ticket-selector {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Tambola</h1>
+            <p class="subtitle">Ticket Marker</p>
+        </div>
+
+        <div class="controls">
+            <div class="ticket-selector">
+                <label>Number of Tickets:</label>
+                <div class="number-buttons">
+                    <button class="num-btn active" data-num="1">1</button>
+                    <button class="num-btn" data-num="2">2</button>
+                    <button class="num-btn" data-num="3">3</button>
+                    <button class="num-btn" data-num="4">4</button>
+                    <button class="num-btn" data-num="5">5</button>
+                </div>
+            </div>
+            <button class="generate-btn" onclick="generateTickets()">New Tickets</button>
+        </div>
+
+        <div id="ticketsContainer"></div>
+    </div>
+
+    <script>
+        let selectedNum = 1;
+        const colors = ['orange', 'red', 'blue', 'green', 'purple'];
+
+        // Number button selection
+        document.querySelectorAll('.num-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedNum = parseInt(this.dataset.num);
+            });
+        });
+
+        function generateTicket() {
+            const ticket = Array(3).fill(null).map(() => Array(9).fill(0));
+            
+            // Determine which 5 cells in each row should have numbers
+            for (let row = 0; row < 3; row++) {
+                const positions = [];
+                while (positions.length < 5) {
+                    const pos = Math.floor(Math.random() * 9);
+                    if (!positions.includes(pos)) positions.push(pos);
+                }
+                positions.forEach(pos => ticket[row][pos] = -1);
+            }
+            
+            // Fill numbers
+            const usedNumbers = new Set();
+            
+            for (let col = 0; col < 9; col++) {
+                const min = col === 0 ? 1 : col * 10;
+                const max = col === 0 ? 9 : col * 10 + 9;
+                const availableNums = [];
+                
+                for (let n = min; n <= max; n++) {
+                    if (!usedNumbers.has(n)) availableNums.push(n);
+                }
+                
+                // Shuffle
+                for (let i = availableNums.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [availableNums[i], availableNums[j]] = [availableNums[j], availableNums[i]];
+                }
+                
+                let numIdx = 0;
+                for (let row = 0; row < 3; row++) {
+                    if (ticket[row][col] === -1) {
+                        ticket[row][col] = availableNums[numIdx];
+                        usedNumbers.add(availableNums[numIdx]);
+                        numIdx++;
+                    }
+                }
+            }
+            
+            // Sort columns
+            for (let col = 0; col < 9; col++) {
+                const colNums = [];
+                for (let row = 0; row < 3; row++) {
+                    if (ticket[row][col] > 0) colNums.push(ticket[row][col]);
+                }
+                colNums.sort((a, b) => a - b);
+                
+                let sortIdx = 0;
+                for (let row = 0; row < 3; row++) {
+                    if (ticket[row][col] > 0) {
+                        ticket[row][col] = colNums[sortIdx++];
+                    }
+                }
+            }
+            
+            return ticket;
+        }
+
+        function toggleMark(cell) {
+            cell.classList.toggle('marked');
+        }
+
+        function generateTickets() {
+            const container = document.getElementById('ticketsContainer');
+            container.innerHTML = '';
+            
+            if (selectedNum === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">🎲</div>
+                        <h3>No tickets generated yet</h3>
+                        <p>Select number of tickets and click "New Tickets" to start playing!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.className = 'tickets-grid';
+            
+            for (let i = 0; i < selectedNum; i++) {
+                const ticket = generateTicket();
+                const ticketDiv = document.createElement('div');
+                ticketDiv.className = `ticket ${colors[i % colors.length]}`;
+                
+                let html = `
+                    <div class="ticket-inner">
+                        <div class="ticket-title">Ticket #${i + 1}</div>
+                        <div class="ticket-grid">
+                `;
+                
+                for (let row = 0; row < 3; row++) {
+                    html += '<div class="ticket-row">';
+                    for (let col = 0; col < 9; col++) {
+                        const num = ticket[row][col];
+                        if (num === 0) {
+                            html += '<div class="cell empty"></div>';
+                        } else {
+                            html += `<div class="cell number" onclick="toggleMark(this)">${num}</div>`;
+                        }
+                    }
+                    html += '</div>';
+                }
+                
+                html += '</div></div>';
+                ticketDiv.innerHTML = html;
+                container.appendChild(ticketDiv);
+            }
+        }
+
+        // Show empty state initially
+        document.getElementById('ticketsContainer').innerHTML = `
+            <div class="empty-state">
+                <div class="emoji">🎲</div>
+                <h3>No tickets generated yet</h3>
+                <p>Select number of tickets and click "New Tickets" to start playing!</p>
+            </div>
+        `;
+    </script>
+</body>
+</html>
